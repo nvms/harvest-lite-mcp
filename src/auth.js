@@ -15,23 +15,12 @@ const TOKENS_PAGE = 'https://id.getharvest.com/developers'
 const configDir = () => join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), NAME)
 const credentialsFile = () => join(configDir(), 'credentials.json')
 
-// a line typed at the terminal, not echoed; or the first line piped in
-function readSecret(prompt) {
+function readLine(prompt) {
   return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stderr, terminal: process.stdin.isTTY })
-    if (process.stdin.isTTY) {
-      process.stderr.write(prompt)
-      rl._writeToOutput = () => {}
-    }
-    rl.once('line', (line) => { rl.close(); if (process.stdin.isTTY) process.stderr.write('\n'); resolve(line.trim()) })
+    process.stderr.write(prompt)
+    const rl = createInterface({ input: process.stdin })
+    rl.once('line', (line) => { resolve(line.trim()); rl.close() })
     rl.once('close', () => resolve(''))
-  })
-}
-
-function readChoice(prompt) {
-  return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stderr })
-    rl.question(prompt, (answer) => { rl.close(); resolve(answer.trim()) })
   })
 }
 
@@ -47,14 +36,14 @@ async function harvestAccounts(token) {
 
 export async function signIn() {
   console.error(`Make a Personal Access Token at ${TOKENS_PAGE} (Create new personal access token), then paste it here.`)
-  const token = await readSecret('Token: ')
+  const token = await readLine('Token: ')
   if (!token) throw new Error('no token given')
   const { user, accounts } = await harvestAccounts(token)
   if (!accounts.length) throw new Error('this token reaches no Harvest account')
   let account = accounts[0]
   if (accounts.length > 1) {
     accounts.forEach((a, i) => console.error(`${i + 1}. ${a.name}`))
-    account = accounts[Number(await readChoice('Which account? ')) - 1]
+    account = accounts[Number(await readLine('Which account? ')) - 1]
     if (!account) throw new Error('no such account')
   }
   await mkdir(configDir(), { recursive: true, mode: 0o700 })
