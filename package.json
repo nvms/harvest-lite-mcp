@@ -1,0 +1,20 @@
+{
+  "name": "harvest-lite-mcp",
+  "version": "0.1.0",
+  "description": "A small Harvest MCP server: your projects, your time entries, and logging time",
+  "type": "module",
+  "bin": {
+    "harvest-lite-mcp": "src/server.js"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.25.0"
+  }
+}
